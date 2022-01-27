@@ -4,10 +4,11 @@
 
 package frc.robot;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Drive;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /**
@@ -17,10 +18,13 @@ import edu.wpi.first.wpilibj2.command.Command;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  private static final double kLowerDeadband = 0.17;
+  private static final double kUpperDeadband = 0.95;
+  private final XboxController _driverController = new XboxController(0);
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-
-  private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
+  private final DoubleSupplier _driverSpeedSupplier = () -> filterControllerInputs(-_driverController.getLeftY());
+  private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
+  private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -43,6 +47,22 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    return null;
+  }
+
+  private static double filterControllerInputs(double input) {
+    if (Math.abs(input) < kLowerDeadband){
+      return 0;
+    }
+
+    //The XBox controller sometimes won't go all the way to 1
+    if (Math.abs(input) > kUpperDeadband){
+      return input > 0 ? 1 : -1;
+    }
+
+    //cubing input so we have more control at lower values
+    var filtered = input * input * input;
+
+    return filtered;
   }
 }

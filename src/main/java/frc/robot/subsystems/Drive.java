@@ -204,7 +204,8 @@ public class Drive extends SubsystemBase
      * @return the turn rate of the robot in degrees per second.
      */
     public double getTurnRate() {
-        return _imu.getGyroAngleZ();
+        //TODO we need to figure out how to get turn rate now that the IMU libraries have changed.
+        return 0;
     }
 
     public void setSpeedSupplier(DoubleSupplier speedSupplier) {
