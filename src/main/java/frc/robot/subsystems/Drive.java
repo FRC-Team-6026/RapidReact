@@ -157,8 +157,8 @@ public class Drive extends SubsystemBase
           rightFeedForward = rightFeedForward > 0 ? rightFeedForward + Constants.ksVolts : rightFeedForward - Constants.ksVolts;
         }
 
-        _leftPid.setReference(leftVelocityRpm, ControlType.kVelocity, 0, leftFeedForward, ArbFFUnits.kVoltage);
-        _rightPid.setReference(rightVelocityRpm, ControlType.kVelocity, 0, rightFeedForward, ArbFFUnits.kVoltage);
+        _leftPid.setReference(leftVelocityRpm, ControlType.kSmartVelocity, 0, leftFeedForward, ArbFFUnits.kVoltage);
+        _rightPid.setReference(rightVelocityRpm, ControlType.kSmartVelocity, 0, rightFeedForward, ArbFFUnits.kVoltage);
     }
 
     /**
