@@ -194,7 +194,7 @@ public class Drive extends SubsystemBase
      * @return the robot's heading in degrees, from -180 to 180
      */
     public double getHeading() {
-        //getGyroAngleZ is an accumulated heading, and is not normalized -180 to 180
+        //getAngle is an accumulated heading, and is not normalized -180 to 180
         return Rotation2d.fromDegrees(_imu.getAngle()).getDegrees();
     }
 
@@ -204,7 +204,7 @@ public class Drive extends SubsystemBase
      * @return the turn rate of the robot in degrees per second.
      */
     public double getTurnRate() {
-        return _imu.getRate();
+        return -_imu.getRate();
     }
 
     public void setSpeedSupplier(DoubleSupplier speedSupplier) {
