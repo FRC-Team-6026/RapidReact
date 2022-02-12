@@ -21,13 +21,13 @@ import java.util.function.*;
 
 public class Drive extends SubsystemBase
 {
-    private final CANSparkMax _left1 = new CANSparkMax(9, MotorType.kBrushless);
-    private final CANSparkMax _left2 = new CANSparkMax(10, MotorType.kBrushless);
+    private final CANSparkMax _left1 = new CANSparkMax(1, MotorType.kBrushless);
+    private final CANSparkMax _left2 = new CANSparkMax(2, MotorType.kBrushless);
     private final RelativeEncoder _leftEncoder;
     private final SparkMaxPIDController _leftPid;
 
-    private final CANSparkMax _right1 = new CANSparkMax(8, MotorType.kBrushless);
-    private final CANSparkMax _right2 = new CANSparkMax(7, MotorType.kBrushless);
+    private final CANSparkMax _right1 = new CANSparkMax(3, MotorType.kBrushless);
+    private final CANSparkMax _right2 = new CANSparkMax(4, MotorType.kBrushless);
     private final RelativeEncoder _rightEncoder;
     private final SparkMaxPIDController _rightPid;
 
