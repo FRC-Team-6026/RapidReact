@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -27,8 +28,10 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DoubleSupplier _driverSpeedSupplier = () -> filterControllerInputs(-_driverController.getLeftY());
   private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
+  private final DoubleSupplier _driverShooterSupplier = () -> filteredShooterInput(_driverController.getLeftTriggerAxis(), _driverController.getRightTriggerAxis());
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
   private final Intake _intake = new Intake();
+  private final Shooter _shooter = new Shooter(_driverShooterSupplier);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -77,5 +80,16 @@ public class RobotContainer {
     var filtered = input * input * input;
 
     return filtered;
+  }
+
+  private static double filteredShooterInput(double leftInput, double rightInput)
+  {
+    var leftFiltered = filterControllerInputs(leftInput);
+    var rightFiltered = filterControllerInputs(rightInput);
+    if (leftFiltered > rightFiltered){
+      return -leftFiltered;
+    } else {
+      return rightFiltered;
+    }
   }
 }
