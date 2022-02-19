@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-    private final double _runRpm = 200;
+    private final double _runRpm = 2000;
     private final double _kv = 0.060519 / 60;
     private final double _ks = 0.20893;
     private final CANSparkMax _intake = new CANSparkMax(5, MotorType.kBrushless);
@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase {
         _intake.setInverted(true);
         _intakePID = _intake.getPIDController();
         _intakeEncoder = _intake.getEncoder();
-        _intakePID.setP(0.048229 / 60);
+        _intakePID.setP(9.9E-08);
         _intakePID.setOutputRange(-1, 1);
         _intakePID.setSmartMotionMaxVelocity(500, 0);
         _intakePID.setSmartMotionMaxAccel(100, 0);
@@ -41,14 +41,16 @@ public class Intake extends SubsystemBase {
     }
     public void runIn() {
         var feedForwardVolts = -_ks-(_runRpm*_kv);
-        //_intakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
-        _intakePID.setReference(0.2, ControlType.kDutyCycle);
+        _intakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
+        SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
+        //_intakePID.setReference(0.2, ControlType.kDutyCycle);
     }
 
     public void runOut() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
-        //_intakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
-        _intakePID.setReference(-0.2, ControlType.kDutyCycle);
+        _intakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
+        SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
+        //_intakePID.setReference(-0.2, ControlType.kDutyCycle);
     }
 
     public void stop() {
