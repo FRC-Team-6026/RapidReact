@@ -39,14 +39,14 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake Velocity", _intakeEncoder.getVelocity());
       SmartDashboard.putNumber("Intake Position", _intakeEncoder.getPosition());
     }
-    public void runIn() {
+    public void runOut() {
         var feedForwardVolts = -_ks-(_runRpm*_kv);
         _intakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
         //_intakePID.setReference(0.2, ControlType.kDutyCycle);
     }
 
-    public void runOut() {
+    public void runIn() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _intakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
