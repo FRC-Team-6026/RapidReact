@@ -9,7 +9,10 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,6 +28,7 @@ public class RobotContainer {
   private final DoubleSupplier _driverSpeedSupplier = () -> filterControllerInputs(-_driverController.getLeftY());
   private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
+  private final Intake _intake = new Intake();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -38,7 +42,16 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureButtonBindings() {}
+  private void configureButtonBindings() {
+    var driverRightBumper = new JoystickButton(_driverController, XboxController.Button.kRightBumper.value);
+    var driverLeftBumper = new JoystickButton(_driverController, XboxController.Button.kLeftBumper.value);
+
+    driverRightBumper.whenPressed(new InstantCommand(() -> _intake.runIn(), _intake), true)
+      .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
+    
+    driverLeftBumper.whenPressed(new InstantCommand(() -> _intake.runOut(), _intake), true)
+      .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

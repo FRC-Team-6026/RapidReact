@@ -37,9 +37,9 @@ public final class Constants {
     public static final double kMetersPerSecondPerRPM = kMetersPerMotorRevolution / 60.0;
 
     //Spark max PID constants
-    public static final double kMaxRpm = 3000;
+    public static final double kMaxRpm = 4500;
     public static final double kMaxAccelRpmPerSec = 1500;
-    public static final double kRotationDiffRpm = 1000;
+    public static final double kRotationDiffRpm = 1500;
     public static final double kFf = 0;
     public static final double kP = 10e-10;
     public static final double kI = 0;
