@@ -31,15 +31,15 @@ public class Intake extends SubsystemBase {
         super();
         _armIntakePID = _armIntake.getPIDController();
         _armIntakeEncoder = _armIntake.getEncoder();
-        initializeMotor(_armIntake, _armIntakeEncoder, _armIntakePID, 9.9E-08, true);
+        initializeMotor(_armIntake, _armIntakeEncoder, _armIntakePID, 9.9E-08, true, IdleMode.kCoast);
 
         _intakePID = _intake.getPIDController();
         _intakeEncoder = _intake.getEncoder();
-        initializeMotor(_intake, _intakeEncoder, _intakePID, 9.9E-08, true);
+        initializeMotor(_intake, _intakeEncoder, _intakePID, 0, true, IdleMode.kBrake);
 
         _conveyorPID = _conveyor.getPIDController();
         _conveyorEncoder = _conveyor.getEncoder();
-        initializeMotor(_conveyor, _conveyorEncoder, _conveyorPID, 9.9E-08, true);
+        initializeMotor(_conveyor, _conveyorEncoder, _conveyorPID, 0, true, IdleMode.kBrake);
     }
     @Override
     public void periodic() {
@@ -50,25 +50,33 @@ public class Intake extends SubsystemBase {
         var feedForwardVolts = -_ks-(_runRpm*_kv);
         _armIntakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
+        _intakePID.setReference(-0.4, ControlType.kDutyCycle);
+        _conveyorPID.setReference(-0.4, ControlType.kDutyCycle);
+
     }
 
     public void runIn() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _armIntakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
+        _intakePID.setReference(0.4, ControlType.kDutyCycle);
+        _conveyorPID.setReference(0.4, ControlType.kDutyCycle);
     }
 
     public void stop() {
         _armIntake.stopMotor();
+        _intake.stopMotor();
+        _conveyor.stopMotor();
     }
     
     private void initializeMotor (CANSparkMax motor,
         RelativeEncoder encoder,
         SparkMaxPIDController controller,
         double p,
-        boolean isInverted){
+        boolean isInverted,
+        IdleMode idleMode){
     motor.restoreFactoryDefaults();
-    motor.setIdleMode(IdleMode.kCoast);
+    motor.setIdleMode(idleMode);
     motor.setInverted(isInverted);
     controller.setP(p);
     controller.setOutputRange(-1, 1);
