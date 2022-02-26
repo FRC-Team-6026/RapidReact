@@ -8,6 +8,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -24,9 +26,11 @@ public class Intake extends SubsystemBase {
     private final RelativeEncoder _intakeEncoder;
     private final SparkMaxPIDController _intakePID;
 
-    private final CANSparkMax _conveyor = new CANSparkMax(6, MotorType.kBrushless);
+    private final CANSparkMax _conveyor = new CANSparkMax(9, MotorType.kBrushless);
     private final RelativeEncoder _conveyorEncoder;
     private final SparkMaxPIDController _conveyorPID;
+
+    private final Solenoid _armControl = new Solenoid(12, PneumaticsModuleType.REVPH, 0);
     public Intake() {
         super();
         _armIntakePID = _armIntake.getPIDController();
@@ -50,8 +54,8 @@ public class Intake extends SubsystemBase {
         var feedForwardVolts = -_ks-(_runRpm*_kv);
         _armIntakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
-        _intakePID.setReference(-0.4, ControlType.kDutyCycle);
-        _conveyorPID.setReference(-0.4, ControlType.kDutyCycle);
+        _intakePID.setReference(-0.3, ControlType.kDutyCycle);
+        _conveyorPID.setReference(-0.3, ControlType.kDutyCycle);
 
     }
 
@@ -59,8 +63,8 @@ public class Intake extends SubsystemBase {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _armIntakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
         SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
-        _intakePID.setReference(0.4, ControlType.kDutyCycle);
-        _conveyorPID.setReference(0.4, ControlType.kDutyCycle);
+        _intakePID.setReference(0.3, ControlType.kDutyCycle);
+        _conveyorPID.setReference(0.3, ControlType.kDutyCycle);
     }
 
     public void stop() {
@@ -69,6 +73,14 @@ public class Intake extends SubsystemBase {
         _conveyor.stopMotor();
     }
     
+    public void extendArm() {
+        _armControl.set(true);
+    }
+
+    public void retractArm(){
+        _armControl.set(false);
+    }
+
     private void initializeMotor (CANSparkMax motor,
         RelativeEncoder encoder,
         SparkMaxPIDController controller,

@@ -48,12 +48,17 @@ public class RobotContainer {
   private void configureButtonBindings() {
     var driverRightBumper = new JoystickButton(_driverController, XboxController.Button.kRightBumper.value);
     var driverLeftBumper = new JoystickButton(_driverController, XboxController.Button.kLeftBumper.value);
+    var driverAButton = new JoystickButton(_driverController, XboxController.Button.kA.value);
+    var driverBButton = new JoystickButton(_driverController, XboxController.Button.kB.value);
 
     driverRightBumper.whenPressed(new InstantCommand(() -> _intake.runIn(), _intake), true)
       .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
     
     driverLeftBumper.whenPressed(new InstantCommand(() -> _intake.runOut(), _intake), true)
       .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
+
+    driverAButton.whenPressed(new InstantCommand(() -> _intake.extendArm(), _intake), true);
+    driverBButton.whenPressed(new InstantCommand(() -> _intake.retractArm(), _intake), true);
   }
 
   /**
