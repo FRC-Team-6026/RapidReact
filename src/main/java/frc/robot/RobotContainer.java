@@ -14,6 +14,7 @@ import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,8 +31,8 @@ public class RobotContainer {
   private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
   private final DoubleSupplier _driverShooterSupplier = () -> filteredShooterInput(_driverController.getLeftTriggerAxis(), _driverController.getRightTriggerAxis());
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
-  private final Intake _intake = new Intake();
   private final Shooter _shooter = new Shooter(_driverShooterSupplier);
+  private final Intake _intake = new Intake(() -> _shooter.isAtSetPower());
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -50,6 +51,18 @@ public class RobotContainer {
     var driverLeftBumper = new JoystickButton(_driverController, XboxController.Button.kLeftBumper.value);
     var driverAButton = new JoystickButton(_driverController, XboxController.Button.kA.value);
     var driverBButton = new JoystickButton(_driverController, XboxController.Button.kB.value);
+    var leftTrigger = new Trigger(() -> {
+      return _driverController.getLeftTriggerAxis() > 0.5;
+    });
+
+    leftTrigger.whenActive(new InstantCommand(() -> {
+      _intake.runIn();
+      _intake.extendArm();
+    }, _intake), true)
+    .whenInactive(new InstantCommand(() -> {
+      _intake.stop();
+      _intake.retractArm();
+    },_intake), true);
 
     driverRightBumper.whenPressed(new InstantCommand(() -> _intake.runIn(), _intake), true)
       .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);

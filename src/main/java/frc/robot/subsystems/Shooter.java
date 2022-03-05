@@ -27,6 +27,7 @@ public class Shooter extends SubsystemBase {
     private final RelativeEncoder _kickerEncoder;
     private final SparkMaxPIDController _kickerPID;
     private DoubleSupplier _shooterSupplier;
+    private final double _maxDiff = 100;
 
     public Shooter(DoubleSupplier shooterSupplier) {
         super();
@@ -84,4 +85,23 @@ public class Shooter extends SubsystemBase {
         var kickerVolts = (-_ksKicker - setRpm*_kvKicker);
         _kickerPID.setReference(-setRpm, ControlType.kSmartVelocity, 0, kickerVolts, ArbFFUnits.kVoltage);
     }
+
+    public boolean isAtSetPower(){
+        var power = _shooterSupplier.getAsDouble();
+        if (power < 0.1){
+            return false;
+        }
+        var setRpm = power*_maxRpm;
+        var shooterVelocity = _shooterEncoder.getVelocity();
+        var kickerVelocity = _kickerEncoder.getVelocity();
+        var shooterDiff = Math.abs(shooterVelocity-setRpm);
+        var kickerDiff = Math.abs(kickerVelocity-setRpm);
+
+        if (shooterDiff < _maxDiff && kickerDiff < _maxDiff){
+            return true;
+        }
+        return false;
+
+    }
+
 }
