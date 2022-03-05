@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Elevator extends SubsystemBase {
@@ -24,11 +25,17 @@ public class Elevator extends SubsystemBase {
         _elevatorPID.setFeedbackDevice(_elevatorEncoder);
     }
 
+    @Override
+    public void periodic() {
+        var elevatorEncoder = _elevatorEncoder.getPosition();
+        SmartDashboard.putNumber("elevator position", elevatorEncoder);
+    }
+
     public void extend() {
-        _elevatorPID.setReference(0.3, ControlType.kDutyCycle);
+        _elevatorPID.setReference(0.2, ControlType.kDutyCycle);
     }
     public void retract() {
-        _elevatorPID.setReference(-0.3, ControlType.kDutyCycle);
+        _elevatorPID.setReference(-0.2, ControlType.kDutyCycle);
     }
     public void stop() {
         _elevator.stopMotor();
