@@ -68,7 +68,7 @@ public class Intake extends SubsystemBase {
                 _intake.stopMotor();
                 _conveyor.stopMotor();
             }
-        }));
+        }, this));
     }
     @Override
     public void periodic() {
