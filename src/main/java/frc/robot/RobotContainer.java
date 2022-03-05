@@ -9,13 +9,13 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -33,7 +33,7 @@ public class RobotContainer {
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
   private final Shooter _shooter = new Shooter(_driverShooterSupplier);
   private final Intake _intake = new Intake(() -> _shooter.isAtSetPower());
-
+  private final Elevator _elevator = new Elevator();
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -64,11 +64,11 @@ public class RobotContainer {
       _intake.retractArm();
     },_intake), true);
 
-    driverRightBumper.whenPressed(new InstantCommand(() -> _intake.runIn(), _intake), true)
-      .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
+    driverRightBumper.whenPressed(new InstantCommand(() -> _elevator.extend(), _elevator), true)
+      .whenReleased(new InstantCommand(()-> _elevator.stop(), _elevator), true);
     
-    driverLeftBumper.whenPressed(new InstantCommand(() -> _intake.runOut(), _intake), true)
-      .whenReleased(new InstantCommand(()-> _intake.stop(), _intake), true);
+    driverLeftBumper.whenPressed(new InstantCommand(() -> _elevator.retract(), _elevator), true)
+      .whenReleased(new InstantCommand(()-> _elevator.stop(), _elevator), true);
 
     driverAButton.whenPressed(new InstantCommand(() -> _intake.extendArm(), _intake), true);
     driverBButton.whenPressed(new InstantCommand(() -> _intake.retractArm(), _intake), true);
