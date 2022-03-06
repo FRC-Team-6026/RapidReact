@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -15,6 +16,9 @@ public class Elevator extends SubsystemBase {
     private final CANSparkMax _elevator = new CANSparkMax(11, MotorType.kBrushless);
     private final RelativeEncoder _elevatorEncoder;
     private final SparkMaxPIDController _elevatorPID;
+    private final SparkMaxLimitSwitch _forwardLimitSwitch;
+    private final SparkMaxLimitSwitch _reverseLimitSwitch;
+    private double _maxPosition = Double.MAX_VALUE;
     
     public Elevator() {
         super();
@@ -23,12 +27,24 @@ public class Elevator extends SubsystemBase {
         _elevator.restoreFactoryDefaults();
         _elevator.setIdleMode(IdleMode.kBrake);
         _elevatorPID.setFeedbackDevice(_elevatorEncoder);
+        _forwardLimitSwitch = _elevator.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+        _reverseLimitSwitch = _elevator.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
     }
 
     @Override
     public void periodic() {
         var elevatorEncoder = _elevatorEncoder.getPosition();
         SmartDashboard.putNumber("elevator position", elevatorEncoder);
+        //if at the bottom of travel, 0 out the encoder position.
+        if (_reverseLimitSwitch.isPressed()){
+            _elevatorEncoder.setPosition(0);
+        } else if (_forwardLimitSwitch.isPressed()){
+            _maxPosition = elevatorEncoder - 1;
+        }
+
+        if (elevatorEncoder > _maxPosition){
+            _elevator.stopMotor();
+        }
     }
 
     public void extend() {
