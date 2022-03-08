@@ -18,7 +18,9 @@ public class Elevator extends SubsystemBase {
     private final SparkMaxPIDController _elevatorPID;
     private final SparkMaxLimitSwitch _forwardLimitSwitch;
     private final SparkMaxLimitSwitch _reverseLimitSwitch;
-    private double _maxPosition = Double.MAX_VALUE;
+    private double _maxPosition = 42.5;
+    private double _minPosition = 1;
+    private double _currentReference = 0;
     
     public Elevator() {
         super();
@@ -42,16 +44,36 @@ public class Elevator extends SubsystemBase {
             _maxPosition = elevatorEncoder - 1;
         }
 
-        if (elevatorEncoder > _maxPosition){
-            _elevator.stopMotor();
+        if (elevatorEncoder < _minPosition && _currentReference < 0){
+            _currentReference = 0;
+            _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
+        }
+
+        if (elevatorEncoder > _maxPosition && _currentReference > 0){
+            _currentReference = 0;
+            _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
         }
     }
 
     public void extend() {
-        _elevatorPID.setReference(0.2, ControlType.kDutyCycle);
+        var elevatorEncoder = _elevatorEncoder.getPosition();
+
+        if (elevatorEncoder > _maxPosition)
+            _currentReference = 0;
+        else
+            _currentReference = 0.2;
+
+        _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
     }
     public void retract() {
-        _elevatorPID.setReference(-0.2, ControlType.kDutyCycle);
+        var elevatorEncoder = _elevatorEncoder.getPosition();
+
+        if (elevatorEncoder < _minPosition)
+            _currentReference = 0;
+        else
+            _currentReference = -0.2;
+
+        _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
     }
     public void stop() {
         _elevator.stopMotor();
