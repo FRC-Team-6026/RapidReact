@@ -29,9 +29,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DoubleSupplier _driverSpeedSupplier = () -> filterControllerInputs(-_driverController.getLeftY());
   private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
-  private final DoubleSupplier _driverShooterSupplier = () -> filteredShooterInput(_driverController.getLeftTriggerAxis(), _driverController.getRightTriggerAxis());
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
-  private final Shooter _shooter = new Shooter(_driverShooterSupplier);
+  private final Shooter _shooter = new Shooter();
   private final Intake _intake = new Intake(() -> _shooter.isAtSetPower());
   private final Elevator _elevator = new Elevator();
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -54,6 +53,9 @@ public class RobotContainer {
     var leftTrigger = new Trigger(() -> {
       return _driverController.getLeftTriggerAxis() > 0.5;
     });
+    var rightTrigger = new Trigger(() -> {
+      return _driverController.getRightTriggerAxis() > 0.5;
+    });
 
     leftTrigger.whenActive(new InstantCommand(() -> {
       _intake.runIn();
@@ -63,6 +65,13 @@ public class RobotContainer {
       _intake.stop();
       _intake.retractArm();
     },_intake), true);
+
+    rightTrigger.whenActive(new InstantCommand(() -> {
+      _shooter.fire();
+    }, _shooter), true)
+    .whenInactive(new InstantCommand(() -> {
+      _shooter.stop();
+    },_shooter), true);
 
     driverRightBumper.whenPressed(new InstantCommand(() -> _elevator.extend(), _elevator), true)
       .whenReleased(new InstantCommand(()-> _elevator.stop(), _elevator), true);

@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -11,7 +9,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
@@ -26,10 +23,11 @@ public class Shooter extends SubsystemBase {
     private final CANSparkMax _kicker = new CANSparkMax(8, MotorType.kBrushless);
     private final RelativeEncoder _kickerEncoder;
     private final SparkMaxPIDController _kickerPID;
-    private DoubleSupplier _shooterSupplier;
-    private final double _maxDiff = 100;
+    private double _shooterPower;
+    private double _kickerPower;
+    private final double _maxDiff = 200;
 
-    public Shooter(DoubleSupplier shooterSupplier) {
+    public Shooter() {
         super();
         _shooterPID = _shooter.getPIDController();
         _shooterEncoder = _shooter.getEncoder();
@@ -37,20 +35,6 @@ public class Shooter extends SubsystemBase {
         _kickerEncoder = _kicker.getEncoder();
         initializeMotor(_shooter, _shooterEncoder, _shooterPID, 1.8162E-08);
         initializeMotor(_kicker, _kickerEncoder, _kickerPID, 9.4347E-08);
-        _shooterSupplier = shooterSupplier;
-
-        this.setDefaultCommand(new FunctionalCommand(() -> {/*do nothing on init*/},
-        // fire by default
-        () -> {fire();},
-        //when interrupted set PID controls to voltage and default to 0 to stop
-        interrupted ->
-        {
-        _shooterPID.setReference(0, ControlType.kVoltage);
-        _kickerPID.setReference(0, ControlType.kVoltage);
-        },
-        //never end
-        () -> {return false;},
-        this));
     }
 
     @Override
@@ -59,6 +43,16 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putNumber("Shooter Position", _shooterEncoder.getPosition());
       SmartDashboard.putNumber("Kicker Velocity", _kickerEncoder.getVelocity());
       SmartDashboard.putNumber("Kicker Position", _kickerEncoder.getPosition());
+
+      var shooterPower = SmartDashboard.getNumber("Shooter Power", 0.5);
+      var kickerPower = SmartDashboard.getNumber("Shooter Power", 0.5);
+
+        if(shooterPower!=_shooterPower){
+            _shooterPower=shooterPower;
+        }
+        if(kickerPower!=_kickerPower){
+            _kickerPower=kickerPower;
+        }
     }
 
     private void initializeMotor (CANSparkMax motor,
@@ -76,26 +70,39 @@ public class Shooter extends SubsystemBase {
         motor.burnFlash();
     }
 
+    public void setShooterPower(double shooterPower){
+        _shooterPower = shooterPower;
+        SmartDashboard.putNumber("Shooter Power", _shooterPower);
+
+    }
+
+    public void setKickerPower(double kickerPower){
+        _kickerPower = kickerPower;
+        SmartDashboard.putNumber("Kicker Power", _kickerPower);
+    }
+
     public void fire(){
-        var power = _shooterSupplier.getAsDouble();
-        var setRpm = power*_maxRpm;
-        SmartDashboard.putNumber("setRpm", setRpm);
-        var shooterVolts = _ksShooter + setRpm*_kvShooter;
-        _shooterPID.setReference(setRpm, ControlType.kSmartVelocity, 0, shooterVolts, ArbFFUnits.kVoltage);
-        var kickerVolts = (-_ksKicker - setRpm*_kvKicker);
-        _kickerPID.setReference(-setRpm, ControlType.kSmartVelocity, 0, kickerVolts, ArbFFUnits.kVoltage);
+        var shooterRpm = _shooterPower*_maxRpm;
+        var kickerRpm = _kickerPower*_maxRpm;
+        SmartDashboard.putNumber("Kicker Rpm", kickerRpm);
+        SmartDashboard.putNumber("Shooter Rpm", shooterRpm);
+        var shooterVolts = _ksShooter + shooterRpm*_kvShooter;
+        _shooterPID.setReference(shooterRpm, ControlType.kSmartVelocity, 0, shooterVolts, ArbFFUnits.kVoltage);
+        var kickerVolts = (-_ksKicker - kickerRpm*_kvKicker);
+        _kickerPID.setReference(-kickerRpm, ControlType.kSmartVelocity, 0, kickerVolts, ArbFFUnits.kVoltage);
+    }
+
+    public void stop(){
+
     }
 
     public boolean isAtSetPower(){
-        var power = _shooterSupplier.getAsDouble();
-        if (power < 0.1){
-            return false;
-        }
-        var setRpm = power*_maxRpm;
+        var shooterRpm = _shooterPower*_maxRpm;
+        var kickerRpm = _kickerPower*_maxRpm;
         var shooterVelocity = _shooterEncoder.getVelocity();
         var kickerVelocity = _kickerEncoder.getVelocity();
-        var shooterDiff = Math.abs(shooterVelocity-setRpm);
-        var kickerDiff = Math.abs(kickerVelocity-setRpm);
+        var shooterDiff = Math.abs(shooterVelocity-shooterRpm);
+        var kickerDiff = Math.abs(kickerVelocity-kickerRpm);
 
         if (shooterDiff < _maxDiff && kickerDiff < _maxDiff){
             return true;
