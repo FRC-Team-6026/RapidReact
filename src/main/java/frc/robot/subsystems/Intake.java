@@ -42,6 +42,7 @@ public class Intake extends SubsystemBase {
     private final DigitalInput _intakePhotocell = new DigitalInput(0);
 
     private final BooleanSupplier _isAtSetPowerSupplier;
+    private boolean _isBallLoading = false;
 
     private final Solenoid _armControl = new Solenoid(12, PneumaticsModuleType.REVPH, 0);
     public Intake(BooleanSupplier isAtSetPowerSupplier) {
@@ -61,11 +62,24 @@ public class Intake extends SubsystemBase {
         _isAtSetPowerSupplier = isAtSetPowerSupplier;
 
         this.setDefaultCommand(new RunCommand(() -> {
-            if (_isAtSetPowerSupplier.getAsBoolean() || (isBallAtIntake() && ballAtShooter() == BallColor.none)){
+            var ballAtShooter = ballAtShooter();
+            SmartDashboard.putString("Ball At Shooter", ballAtShooter.toString());
+            if (isBallAtIntake() && ballAtShooter == BallColor.none){
+                _isBallLoading = true;
+            }
+            if (ballAtShooter != BallColor.none){
+                _isBallLoading = false;
+            }
+
+            if (isBallAtIntake() || _isBallLoading){
                 _intakePID.setReference(0.3, ControlType.kDutyCycle);
+            }else{
+                _intake.stopMotor();
+            }
+
+            if (_isAtSetPowerSupplier.getAsBoolean() || _isBallLoading){
                 _conveyorPID.setReference(0.3, ControlType.kDutyCycle);
             } else {
-                _intake.stopMotor();
                 _conveyor.stopMotor();
             }
         }, this));
@@ -118,7 +132,7 @@ public class Intake extends SubsystemBase {
         motor.burnFlash();
     }
 
-    private BallColor ballAtShooter(){
+    public BallColor ballAtShooter(){
         var r = _colorSensor.getRed();
         var b = _colorSensor.getBlue();
         var g = _colorSensor.getGreen();
@@ -128,8 +142,8 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("green", g);
         SmartDashboard.putNumber("proximity", x);
 
-        if(x > 130){
-            if(b>300){
+        if(x > 100){
+            if(b>250){
                 return BallColor.blue;
             }  else if(r>300) {
                 return BallColor.red;
@@ -139,6 +153,6 @@ public class Intake extends SubsystemBase {
     }
 
     private boolean isBallAtIntake(){
-        return !_intakePhotocell.get();
+        return _intakePhotocell.get();
     }
 }

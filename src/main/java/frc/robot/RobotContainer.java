@@ -13,7 +13,9 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 /**
@@ -50,6 +52,8 @@ public class RobotContainer {
     var driverLeftBumper = new JoystickButton(_driverController, XboxController.Button.kLeftBumper.value);
     var driverAButton = new JoystickButton(_driverController, XboxController.Button.kA.value);
     var driverBButton = new JoystickButton(_driverController, XboxController.Button.kB.value);
+    var driverYButton = new JoystickButton(_driverController, XboxController.Button.kY.value);
+    var driverXButton = new JoystickButton(_driverController, XboxController.Button.kX.value);
     var leftTrigger = new Trigger(() -> {
       return _driverController.getLeftTriggerAxis() > 0.5;
     });
@@ -81,6 +85,14 @@ public class RobotContainer {
 
     driverAButton.whenPressed(new InstantCommand(() -> _intake.extendArm(), _intake), true);
     driverBButton.whenPressed(new InstantCommand(() -> _intake.retractArm(), _intake), true);
+    driverYButton.whenPressed(new InstantCommand(() -> {
+      _shooter.setShooterPower(0.5);
+      _shooter.setKickerPower(0.9);
+    }, _shooter), true);
+    driverXButton.whenPressed(new InstantCommand(() -> {
+      _shooter.setShooterPower(0.3);
+      _shooter.setKickerPower(0.3);
+    }, _shooter), true);
   }
 
   /**
@@ -89,8 +101,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return null;
+    //first, fire
+    var fireCommand = new StartEndCommand(() -> _shooter.fire(),() -> _shooter.stop(), _shooter)
+      .withTimeout(3);
+    
+    return fireCommand;
   }
 
   private static double filterControllerInputs(double input) {

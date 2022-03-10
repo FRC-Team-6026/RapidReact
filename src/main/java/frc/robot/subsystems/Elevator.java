@@ -18,9 +18,10 @@ public class Elevator extends SubsystemBase {
     private final SparkMaxPIDController _elevatorPID;
     private final SparkMaxLimitSwitch _forwardLimitSwitch;
     private final SparkMaxLimitSwitch _reverseLimitSwitch;
-    private double _maxPosition = 42.5;
+    private double _maxPosition = 212;
     private double _minPosition = 1;
     private double _currentReference = 0;
+    private final double _drivingSpeed = 0.5;
     
     public Elevator() {
         super();
@@ -61,7 +62,7 @@ public class Elevator extends SubsystemBase {
         if (elevatorEncoder > _maxPosition)
             _currentReference = 0;
         else
-            _currentReference = 0.2;
+            _currentReference = _drivingSpeed;
 
         _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
     }
@@ -71,7 +72,7 @@ public class Elevator extends SubsystemBase {
         if (elevatorEncoder < _minPosition)
             _currentReference = 0;
         else
-            _currentReference = -0.2;
+            _currentReference = -_drivingSpeed;
 
         _elevatorPID.setReference(_currentReference, ControlType.kDutyCycle);
     }

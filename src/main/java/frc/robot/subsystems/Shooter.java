@@ -35,6 +35,10 @@ public class Shooter extends SubsystemBase {
         _kickerEncoder = _kicker.getEncoder();
         initializeMotor(_shooter, _shooterEncoder, _shooterPID, 1.8162E-08);
         initializeMotor(_kicker, _kickerEncoder, _kickerPID, 9.4347E-08);
+        setKickerPower(0.3);
+        setShooterPower(0.3);
+        SmartDashboard.putNumber("Shooter Power", _shooterPower);
+        SmartDashboard.putNumber("Kicker Power", _kickerPower);
     }
 
     @Override
@@ -45,7 +49,7 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putNumber("Kicker Position", _kickerEncoder.getPosition());
 
       var shooterPower = SmartDashboard.getNumber("Shooter Power", 0.5);
-      var kickerPower = SmartDashboard.getNumber("Shooter Power", 0.5);
+      var kickerPower = SmartDashboard.getNumber("Kicker Power", 0.5);
 
         if(shooterPower!=_shooterPower){
             _shooterPower=shooterPower;
@@ -72,13 +76,10 @@ public class Shooter extends SubsystemBase {
 
     public void setShooterPower(double shooterPower){
         _shooterPower = shooterPower;
-        SmartDashboard.putNumber("Shooter Power", _shooterPower);
-
     }
 
     public void setKickerPower(double kickerPower){
         _kickerPower = kickerPower;
-        SmartDashboard.putNumber("Kicker Power", _kickerPower);
     }
 
     public void fire(){
@@ -93,12 +94,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stop(){
-
+        _shooter.stopMotor();
+        _kicker.stopMotor();
     }
 
     public boolean isAtSetPower(){
         var shooterRpm = _shooterPower*_maxRpm;
-        var kickerRpm = _kickerPower*_maxRpm;
+        var kickerRpm = -_kickerPower*_maxRpm;
         var shooterVelocity = _shooterEncoder.getVelocity();
         var kickerVelocity = _kickerEncoder.getVelocity();
         var shooterDiff = Math.abs(shooterVelocity-shooterRpm);
