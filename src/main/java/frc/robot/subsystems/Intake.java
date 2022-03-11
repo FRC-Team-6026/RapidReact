@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,10 +45,12 @@ public class Intake extends SubsystemBase {
     private final BooleanSupplier _isAtSetPowerSupplier;
     private boolean _isBallLoading = false;
     private boolean _overrideIntakeSensor = false;
+    private final SendableChooser<String> _teamChooser;
 
     private final Solenoid _armControl = new Solenoid(12, PneumaticsModuleType.REVPH, 0);
-    public Intake(BooleanSupplier isAtSetPowerSupplier) {
+    public Intake(BooleanSupplier isAtSetPowerSupplier, SendableChooser<String> teamChooser) {
         super();
+        _teamChooser = teamChooser;
         _armIntakePID = _armIntake.getPIDController();
         _armIntakeEncoder = _armIntake.getEncoder();
         initializeMotor(_armIntake, _armIntakeEncoder, _armIntakePID, 9.9E-08, true, IdleMode.kCoast);
@@ -79,7 +82,7 @@ public class Intake extends SubsystemBase {
             }
 
             if (_isAtSetPowerSupplier.getAsBoolean() || _isBallLoading){
-                _conveyorPID.setReference(0.3, ControlType.kDutyCycle);
+                _conveyorPID.setReference(0.25, ControlType.kDutyCycle);
             } else {
                 _conveyor.stopMotor();
             }
@@ -90,18 +93,20 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake Velocity", _armIntakeEncoder.getVelocity());
       SmartDashboard.putNumber("Intake Position", _armIntakeEncoder.getPosition());
     }
-    public void runOut() {
-        var feedForwardVolts = -_ks-(_runRpm*_kv);
-        _armIntakePID.setReference(-_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
-        SmartDashboard.putNumber("Feed forward voltage", feedForwardVolts);
-        _intakePID.setReference(-0.3, ControlType.kDutyCycle);
+    public void reverseConveyor() {
         _conveyorPID.setReference(-0.3, ControlType.kDutyCycle);
+    }
 
+    public void runConveyor(){
+        _conveyorPID.setReference(0.3, ControlType.kDutyCycle);
     }
 
     public void runIn() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _armIntakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
+    }
+    public void stopConveyor() {
+        _conveyor.stopMotor();
     }
 
     public void stop() {
@@ -158,6 +163,10 @@ public class Intake extends SubsystemBase {
     }
 
     private boolean isBallAtIntake(){
-        return _intakePhotocell.get() || _overrideIntakeSensor;
+        if(_teamChooser.getSelected() == "Red" ){ 
+            return !_intakePhotocell.get() || _overrideIntakeSensor;
+        } else {
+            return _intakePhotocell.get() || _overrideIntakeSensor;
+        }
     }
 }

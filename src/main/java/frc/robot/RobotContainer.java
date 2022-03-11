@@ -8,6 +8,8 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
@@ -28,15 +30,19 @@ public class RobotContainer {
   private static final double kLowerDeadband = 0.17;
   private static final double kUpperDeadband = 0.95;
   private final XboxController _driverController = new XboxController(0);
+  private final SendableChooser<String> _teamChooser = new SendableChooser<String>();
   // The robot's subsystems and commands are defined here...
   private final DoubleSupplier _driverSpeedSupplier = () -> filterControllerInputs(-_driverController.getLeftY());
   private final DoubleSupplier _driverRotationSupplier = () -> filterControllerInputs(_driverController.getRightX());
   private final Drive _drive = new Drive(_driverSpeedSupplier, _driverRotationSupplier);
   private final Shooter _shooter = new Shooter();
-  private final Intake _intake = new Intake(() -> _shooter.isAtSetPower());
+  private final Intake _intake = new Intake(() -> _shooter.isAtSetPower(), _teamChooser);
   private final Elevator _elevator = new Elevator();
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    _teamChooser.addOption("Blue", "Blue");
+    _teamChooser.addOption("Red", "Red");
+    SmartDashboard.putData("Team Color", _teamChooser);
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -70,9 +76,14 @@ public class RobotContainer {
       _intake.retractArm();
     },_intake), true);
 
-    rightTrigger.whenActive(new InstantCommand(() -> {
+    rightTrigger.whenActive(new StartEndCommand(() -> {
+      _intake.reverseConveyor();
+    }, () -> {
       _shooter.fire();
-    }, _shooter), true)
+      _intake.runConveyor();
+    }, _shooter, _intake)
+
+      .withTimeout(0.1))
     .whenInactive(new InstantCommand(() -> {
       _shooter.stop();
     },_shooter), true);
