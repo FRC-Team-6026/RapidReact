@@ -21,7 +21,7 @@ public class Elevator extends SubsystemBase {
     private double _maxPosition = 212;
     private double _minPosition = 1;
     private double _currentReference = 0;
-    private final double _drivingSpeed = 0.5;
+    private final double _drivingSpeed = 0.8;
     
     public Elevator() {
         super();

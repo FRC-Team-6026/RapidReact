@@ -43,6 +43,7 @@ public class Intake extends SubsystemBase {
 
     private final BooleanSupplier _isAtSetPowerSupplier;
     private boolean _isBallLoading = false;
+    private boolean _overrideIntakeSensor = false;
 
     private final Solenoid _armControl = new Solenoid(12, PneumaticsModuleType.REVPH, 0);
     public Intake(BooleanSupplier isAtSetPowerSupplier) {
@@ -72,7 +73,7 @@ public class Intake extends SubsystemBase {
             }
 
             if (isBallAtIntake() || _isBallLoading){
-                _intakePID.setReference(0.3, ControlType.kDutyCycle);
+                _intakePID.setReference(0.2, ControlType.kDutyCycle);
             }else{
                 _intake.stopMotor();
             }
@@ -105,6 +106,10 @@ public class Intake extends SubsystemBase {
 
     public void stop() {
         _armIntake.stopMotor();
+    }
+
+    public void overrideIntakeSensor(boolean override){
+        _overrideIntakeSensor = override;
     }
     
     public void extendArm() {
@@ -153,6 +158,6 @@ public class Intake extends SubsystemBase {
     }
 
     private boolean isBallAtIntake(){
-        return _intakePhotocell.get();
+        return _intakePhotocell.get() || _overrideIntakeSensor;
     }
 }

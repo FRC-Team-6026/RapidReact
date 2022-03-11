@@ -83,8 +83,8 @@ public class RobotContainer {
     driverLeftBumper.whenPressed(new InstantCommand(() -> _elevator.retract(), _elevator), true)
       .whenReleased(new InstantCommand(()-> _elevator.stop(), _elevator), true);
 
-    driverAButton.whenPressed(new InstantCommand(() -> _intake.extendArm(), _intake), true);
-    driverBButton.whenPressed(new InstantCommand(() -> _intake.retractArm(), _intake), true);
+    driverAButton.whenPressed(new InstantCommand(() -> _intake.overrideIntakeSensor(true), _intake), true)
+      .whenReleased(new InstantCommand(()->  _intake.overrideIntakeSensor(false), _intake), true);
     driverYButton.whenPressed(new InstantCommand(() -> {
       _shooter.setShooterPower(0.5);
       _shooter.setKickerPower(0.9);
@@ -102,10 +102,20 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     //first, fire
-    var fireCommand = new StartEndCommand(() -> _shooter.fire(),() -> _shooter.stop(), _shooter)
+    var fireCommand = new StartEndCommand(() -> {
+      _shooter.setShooterPower(0.3);
+      _shooter.setKickerPower(0.3);
+      _shooter.fire();
+    },() -> _shooter.stop(), _shooter)
       .withTimeout(3);
+
+    var driveBackCommand = new StartEndCommand(() -> {
+      _drive.setSpeedSupplier(() -> -0.3);
+    } , () -> {
+      _drive.setSpeedSupplier(_driverSpeedSupplier);
+    }, _shooter).withTimeout(3);
     
-    return fireCommand;
+    return fireCommand.andThen(driveBackCommand);
   }
 
   private static double filterControllerInputs(double input) {
