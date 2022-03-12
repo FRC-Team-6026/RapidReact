@@ -70,17 +70,19 @@ public class RobotContainer {
     leftTrigger.whenActive(new InstantCommand(() -> {
       _intake.runIn();
       _intake.extendArm();
+      _intake.overrideIntakeSensor(true);
     }, _intake), true)
     .whenInactive(new InstantCommand(() -> {
       _intake.stop();
       _intake.retractArm();
+      _intake.overrideIntakeSensor(false);
     },_intake), true);
 
     rightTrigger.whenActive(new StartEndCommand(() -> {
       _intake.reverseConveyor();
     }, () -> {
       _shooter.fire();
-      _intake.runConveyor();
+      _intake.runIntake();
     }, _shooter, _intake)
 
       .withTimeout(0.1))
@@ -117,8 +119,13 @@ public class RobotContainer {
       _shooter.setShooterPower(0.3);
       _shooter.setKickerPower(0.3);
       _shooter.fire();
-    },() -> _shooter.stop(), _shooter)
+    },() -> {
+       _shooter.stop();
+       _shooter.setShooterPower(0.5);
+       _shooter.setKickerPower(0.9);
+    }, _shooter)
       .withTimeout(3);
+
 
     var driveBackCommand = new StartEndCommand(() -> {
       _drive.setSpeedSupplier(() -> -0.3);
@@ -127,6 +134,7 @@ public class RobotContainer {
     }, _shooter).withTimeout(3);
     
     return fireCommand.andThen(driveBackCommand);
+
   }
 
   private static double filterControllerInputs(double input) {

@@ -94,19 +94,21 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake Position", _armIntakeEncoder.getPosition());
     }
     public void reverseConveyor() {
-        _conveyorPID.setReference(-0.3, ControlType.kDutyCycle);
+        _conveyorPID.setReference(-0.4, ControlType.kDutyCycle);
     }
 
-    public void runConveyor(){
-        _conveyorPID.setReference(0.3, ControlType.kDutyCycle);
+    public void runIntake(){
+        _conveyorPID.setReference(0.4, ControlType.kDutyCycle);
+        _intakePID.setReference(0.3, ControlType.kDutyCycle);
     }
 
     public void runIn() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _armIntakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
     }
-    public void stopConveyor() {
+    public void stopIntake() {
         _conveyor.stopMotor();
+        _intake.stopMotor();
     }
 
     public void stop() {
