@@ -25,6 +25,8 @@ public class Intake extends SubsystemBase {
     private final double _runRpm = 2000;
     private final double _kv = 0.060519 / 60;
     private final double _ks = 0.20893;
+    private final double _kvConveyor = 0.063071 / 60;
+    private final double _ksConveyor = 0.21145;
 
     private final CANSparkMax _armIntake = new CANSparkMax(5, MotorType.kBrushless);
     private final RelativeEncoder _armIntakeEncoder;
@@ -48,6 +50,8 @@ public class Intake extends SubsystemBase {
     private final SendableChooser<String> _teamChooser;
 
     private final Solenoid _armControl = new Solenoid(12, PneumaticsModuleType.REVPH, 0);
+
+    // ------------------------ CONSTRUCTOR -------------------
     public Intake(BooleanSupplier isAtSetPowerSupplier, SendableChooser<String> teamChooser) {
         super();
         _teamChooser = teamChooser;
@@ -61,7 +65,7 @@ public class Intake extends SubsystemBase {
 
         _conveyorPID = _conveyor.getPIDController();
         _conveyorEncoder = _conveyor.getEncoder();
-        initializeMotor(_conveyor, _conveyorEncoder, _conveyorPID, 0, true, IdleMode.kBrake);
+        initializeMotor(_conveyor, _conveyorEncoder, _conveyorPID, 9.9E-08, true, IdleMode.kBrake);
 
         _isAtSetPowerSupplier = isAtSetPowerSupplier;
 
@@ -76,15 +80,15 @@ public class Intake extends SubsystemBase {
             }
 
             if (isBallAtIntake() || _isBallLoading){
-                _intakePID.setReference(0.2, ControlType.kDutyCycle);
+                _intakePID.setReference(0.3, ControlType.kDutyCycle);
             }else{
                 _intake.stopMotor();
             }
 
             if (_isAtSetPowerSupplier.getAsBoolean() || _isBallLoading){
-                _conveyorPID.setReference(0.25, ControlType.kDutyCycle);
+                runIntake();
             } else {
-                _conveyor.stopMotor();
+                stopIntake();
             }
         }, this));
     }
@@ -98,14 +102,16 @@ public class Intake extends SubsystemBase {
     }
 
     public void runIntake(){
-        _conveyorPID.setReference(0.4, ControlType.kDutyCycle);
         _intakePID.setReference(0.3, ControlType.kDutyCycle);
+        var feedForwardVolts = _ksConveyor+(_runRpm*_kvConveyor);
+        _conveyorPID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
     }
 
     public void runIn() {
         var feedForwardVolts = _ks+(_runRpm*_kv);
         _armIntakePID.setReference(_runRpm, ControlType.kSmartVelocity, 0, feedForwardVolts, ArbFFUnits.kVoltage);
     }
+
     public void stopIntake() {
         _conveyor.stopMotor();
         _intake.stopMotor();

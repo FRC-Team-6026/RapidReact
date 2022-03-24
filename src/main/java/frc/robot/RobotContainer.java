@@ -78,17 +78,15 @@ public class RobotContainer {
       _intake.overrideIntakeSensor(false);
     },_intake), true);
 
-    rightTrigger.whenActive(new StartEndCommand(() -> {
-      _intake.reverseConveyor();
-    }, () -> {
-      _shooter.fire();
-      _intake.runIntake();
-    }, _shooter, _intake)
+    var reverseConveyorCommand = new StartEndCommand(()-> {_intake.reverseConveyor();},
+    () -> {_intake.stop();}, _intake).withTimeout(0.1);
 
-      .withTimeout(0.1))
+    var fireCommand = new InstantCommand(() -> {_shooter.fire();}, _shooter);
+
+   rightTrigger.whenActive(reverseConveyorCommand.andThen(fireCommand))
     .whenInactive(new InstantCommand(() -> {
-      _shooter.stop();
-    },_shooter), true);
+    _shooter.stop();
+   },_shooter), true);
 
     driverRightBumper.whenPressed(new InstantCommand(() -> _elevator.extend(), _elevator), true)
       .whenReleased(new InstantCommand(()-> _elevator.stop(), _elevator), true);
