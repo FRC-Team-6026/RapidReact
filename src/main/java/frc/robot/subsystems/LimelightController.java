@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LimelightController extends SubsystemBase {
@@ -22,6 +23,16 @@ public class LimelightController extends SubsystemBase {
         _targetPid.setTolerance(0.1);
         SendableRegistry.setName(_targetPid, "limelight Controller", "Target PID");
         turnLightOff();
+    }
+
+    @Override
+    public void periodic() {
+        var txEntry= _table.getEntry("tx");
+        var tx = txEntry.getNumber(_setpoint);
+        var tyEntry= _table.getEntry("ty");
+        var ty = tyEntry.getNumber(_setpoint);
+        SmartDashboard.putNumber("tx", tx.doubleValue());
+        SmartDashboard.putNumber("ty", ty.doubleValue());
     }
 
     /**
