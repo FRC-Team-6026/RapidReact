@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LimelightController;
 import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -38,6 +39,7 @@ public class RobotContainer {
   private final Shooter _shooter = new Shooter();
   private final Intake _intake = new Intake(() -> _shooter.isAtSetPower(), _teamChooser);
   private final Elevator _elevator = new Elevator();
+  private final LimelightController _limelight = new LimelightController();
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     _teamChooser.addOption("Blue", "Blue");
