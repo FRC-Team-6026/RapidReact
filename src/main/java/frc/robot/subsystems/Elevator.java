@@ -32,12 +32,15 @@ public class Elevator extends SubsystemBase {
         _elevatorPID.setFeedbackDevice(_elevatorEncoder);
         _forwardLimitSwitch = _elevator.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
         _reverseLimitSwitch = _elevator.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+        _elevator.burnFlash();
     }
 
     @Override
     public void periodic() {
         var elevatorEncoder = _elevatorEncoder.getPosition();
         SmartDashboard.putNumber("elevator position", elevatorEncoder);
+        SmartDashboard.putBoolean("top limit switch", _forwardLimitSwitch.isPressed());
+        SmartDashboard.putBoolean("bottom limit switch", _reverseLimitSwitch.isPressed());
         //if at the bottom of travel, 0 out the encoder position.
         if (_reverseLimitSwitch.isPressed()){
             _elevatorEncoder.setPosition(0);
