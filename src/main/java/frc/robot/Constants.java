@@ -39,7 +39,7 @@ public final class Constants {
     //Spark max PID constants
     public static final double kMaxRpm = 4500;
     public static final double kMaxAccelRpmPerSec = 1500;
-    public static final double kRotationDiffRpm = 1500;
+    public static final double kRotationDiffRpm = 1200;
     public static final double kFf = 0;
     public static final double kP = 10e-10;
     public static final double kI = 0;
