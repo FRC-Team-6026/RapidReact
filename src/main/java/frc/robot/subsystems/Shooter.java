@@ -75,12 +75,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShooterPower(double shooterPower){
-        _shooterPower = shooterPower;
+        _shooterPower = Math.min(shooterPower, 1);
         SmartDashboard.putNumber("Shooter Power", _shooterPower);
     }
 
     public void setKickerPower(double kickerPower){
-        _kickerPower = kickerPower;
+        _kickerPower = Math.min(kickerPower, 1);
         SmartDashboard.putNumber("Kicker Power", _kickerPower);
     }
 
