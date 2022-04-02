@@ -42,7 +42,7 @@ public class Intake extends SubsystemBase {
 
     private final I2C.Port _i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 _colorSensor = new ColorSensorV3(_i2cPort);
-    private final DigitalInput _intakePhotocell = new DigitalInput(0);
+    private final DigitalInput _beamBreak = new DigitalInput(0);
 
     private final BooleanSupplier _isAtSetPowerSupplier;
     private boolean _isBallLoading = false;
@@ -171,10 +171,6 @@ public class Intake extends SubsystemBase {
     }
 
     private boolean isBallAtIntake(){
-        if(_teamChooser.getSelected() == "Red" ){ 
-            return !_intakePhotocell.get() || _overrideIntakeSensor;
-        } else {
-            return _intakePhotocell.get() || _overrideIntakeSensor;
-        }
+        return !_beamBreak.get();
     }
 }
